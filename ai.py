@@ -2,6 +2,7 @@ import numpy as np
 import gymnasium as gym
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
+import torch  # ✅ Ajout nécessaire
 import tkinter as tk
 from tkinter import messagebox
 
@@ -9,9 +10,9 @@ from tkinter import messagebox
 class TicTacToe:
     def __init__(self):
         self.board = [[0]*3 for _ in range(3)]
-        self.current_player = 1  # Joueur 1 = humain/X, IA = joueur 2/O
+        self.current_player = 1
         self.game_over = False
-        self.winner = None  # 1: X gagne | 2: O gagne | 0: égalité
+        self.winner = None
 
     def reset(self):
         self.board = [[0]*3 for _ in range(3)]
@@ -24,12 +25,11 @@ class TicTacToe:
             return False
         self.board[row][col] = self.current_player
 
-        # Vérifier victoire
         if self.check_winner(self.current_player):
             self.winner = self.current_player
             self.game_over = True
         elif all(cell != 0 for r in self.board for cell in r):
-            self.winner = 0  # Égalité
+            self.winner = 0
             self.game_over = True
         else:
             self.current_player = 2 if self.current_player == 1 else 1
@@ -113,7 +113,7 @@ class TicTacToeEnv(gym.Env):
         elif board[1][1] == opponent:
             reward -= 1
 
-        corners = [(0,0), (0,2), (2,0), (2,2)]
+        corners = [(0, 0), (0, 2), (2, 0), (2, 2)]
         for r, c in corners:
             if board[r][c] == player:
                 reward += 1
@@ -139,7 +139,7 @@ class TicTacToeEnv(gym.Env):
             return 3
         return 0
 
-# === ENTRAÎNEMENT DE L'AGENT ===
+# === ENTRAÎNEMENT ===
 def train_ai(save_path="tictactoe_ppo"):
     env = TicTacToeEnv()
     check_env(env)
@@ -158,7 +158,7 @@ def train_ai(save_path="tictactoe_ppo"):
     model.save(save_path)
     return model
 
-# === AGENT PREDICTIF ===
+# === AGENT DRL CORRIGÉ ===
 class DRLAgent:
     def __init__(self, model_path="tictactoe_ppo"):
         self.model = PPO.load(model_path)
@@ -172,7 +172,7 @@ class DRLAgent:
             return row, col
 
         valid_actions = [r * 3 + c for (r, c) in valid_moves]
-        obs = np.array([flat_board])
+        obs = torch.tensor([flat_board], dtype=torch.float32)  # ✅ CORRECTION ICI
         dist = self.model.policy.get_distribution(obs)
         probs = dist.distribution.probs.detach().numpy().flatten()
 
@@ -181,7 +181,7 @@ class DRLAgent:
         best_action = valid_actions[np.argmax(valid_probs[valid_actions])]
         return divmod(best_action, 3)
 
-# === INTERFACE GRAPHIQUE AVEC TKINTER ===
+# === INTERFACE TKINTER ===
 class TicTacToeGUI:
     def __init__(self, root, agent):
         self.root = root
@@ -204,7 +204,6 @@ class TicTacToeGUI:
         if self.game.game_over or self.game.board[row][col] != 0:
             return
 
-        # Coup du joueur
         self.game.make_move(row, col)
         self.update_buttons()
 
@@ -212,7 +211,6 @@ class TicTacToeGUI:
             self.show_result()
             return
 
-        # Tour de l'IA
         board = self.game.board
         valid_moves = self.game.get_valid_moves()
         ai_row, ai_col = self.agent.predict(board, valid_moves)
@@ -238,10 +236,10 @@ class TicTacToeGUI:
         messagebox.showinfo("Fin de la partie", msg)
         self.root.destroy()
 
-# === LANCEMENT PRINCIPAL ===
+# === LANCEMENT ===
 if __name__ == "__main__":
     print("Entraînement de l'IA...")
-    train_ai()  # Lancez l'entraînement
+    train_ai()
 
     print("Démarrage de l'interface graphique...")
     root = tk.Tk()
