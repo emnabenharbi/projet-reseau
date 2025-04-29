@@ -60,6 +60,25 @@ class TicTacToe:
         # Check for draw
         if all(cell != 0 for row in self.board for cell in row):
             self.game_over = True
+    
+    def get_state(self):
+        """Added for testing - returns the current game state"""
+        return {
+            'board': [row[:] for row in self.board],
+            'current_player': self.current_player,
+            'game_over': self.game_over,
+            'winner': self.winner,
+            'winning_line': self.winning_line
+        }
+    
+    def get_valid_moves(self):
+        """Added for testing - returns list of valid moves"""
+        moves = []
+        for row in range(3):
+            for col in range(3):
+                if self.board[row][col] == 0:
+                    moves.append((row, col))
+        return moves
 
 class TicTacToeGUI:
     def __init__(self, is_ai_game=False):
