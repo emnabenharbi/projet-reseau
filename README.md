@@ -1,4 +1,4 @@
-# projet-r-seaux
+# projet reseau
 Projet de Développement : Jeux en Ligne avec Agent DRL (tic_tac_toe)
 Ce projet implémente un jeu de Tic-Tac-Toe avec plusieurs fonctionnalités :
 
