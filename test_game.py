@@ -7,7 +7,7 @@ class TestTicTacToe(unittest.TestCase):
     
     def test_initial_state(self):
         state = self.game.get_state()
-        self.assertEqual(state['board'].tolist(), [[0]*3 for _ in range(3)])
+        self.assertEqual(state['board'], [[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         self.assertEqual(state['current_player'], 1)
         self.assertFalse(state['game_over'])
         self.assertIsNone(state['winner'])
